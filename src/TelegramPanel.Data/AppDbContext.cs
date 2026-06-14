@@ -29,6 +29,7 @@ public class AppDbContext : DbContext
     public DbSet<BotChannel> BotChannels => Set<BotChannel>();
     public DbSet<BotChannelCategory> BotChannelCategories => Set<BotChannelCategory>();
     public DbSet<BotChannelMember> BotChannelMembers => Set<BotChannelMember>();
+    public DbSet<AccountCodeShare> AccountCodeShares => Set<AccountCodeShare>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -294,6 +295,23 @@ public class AppDbContext : DbContext
             entity.HasOne(e => e.BotChannel)
                 .WithMany(c => c.Members)
                 .HasForeignKey(e => e.BotChannelId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // AccountCodeShare配置
+        modelBuilder.Entity<AccountCodeShare>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ShareToken).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.LastVerificationCode).HasMaxLength(50);
+            entity.Property(e => e.Last2FaCode).HasMaxLength(50);
+            
+            entity.HasIndex(e => e.ShareToken).IsUnique();
+            entity.HasIndex(e => e.AccountId);
+            
+            entity.HasOne(e => e.Account)
+                .WithMany()
+                .HasForeignKey(e => e.AccountId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
     }
